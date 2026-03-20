@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frederik Morbe — R&D Engineer</title>
+<style>
+  /* ─── Design Tokens — Light ───────────────────────────────────────── */
+  :root {
+    --blue-50:  #eff6ff;
+    --blue-100: #dbeafe;
+    --blue-200: #bfdbfe;
+    --blue-400: #60a5fa;
+    --blue-500: #3b82f6;
+    --blue-600: #2563eb;
+    --blue-700: #1d4ed8;
+
+    --surface-bg:   #f9fafb;
+    --surface-1:    #ffffff;
+    --surface-2:    #f3f8ff;
+    --surface-card: #ffffff;
+
+    --text-primary:   #111827;
+    --text-secondary: #4b5563;
+    --text-muted:     #9ca3af;
+
+    --border-1: #e5e7eb;
+    --border-2: #dbeafe;
+
+    --nav-bg: rgba(255,255,255,.80);
+    --nav-border: rgba(59,130,246,.10);
+
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+    --shadow-md: 0 4px 16px rgba(59,130,246,.10),0 2px 6px rgba(0,0,0,.06);
+    --shadow-lg: 0 12px 40px rgba(59,130,246,.15),0 4px 12px rgba(0,0,0,.08);
+    --shadow-xl: 0 24px 60px rgba(59,130,246,.18),0 8px 24px rgba(0,0,0,.10);
+
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+  }
+
+  /* ─── Design Tokens — Dark ────────────────────────────────────────── */
+  [data-theme="dark"] {
+    --surface-bg:   #0f172a;
+    --surface-1:    #1e293b;
+    --surface-2:    #0f172a;
+    --surface-card: #1e293b;
+
+    --text-primary:   #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted:     #64748b;
+
+    --border-1: #334155;
+    --border-2: #1e3a5f;
+
+    --nav-bg: rgba(15,23,42,.85);
+    --nav-border: rgba(59,130,246,.15);
+
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
+    --shadow-md: 0 4px 16px rgba(0,0,0,.4),0 2px 6px rgba(0,0,0,.25);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,.5),0 4px 12px rgba(0,0,0,.3);
+    --shadow-xl: 0 24px 60px rgba(0,0,0,.6),0 8px 24px rgba(0,0,0,.4);
+
+    --blue-50:  #1e3a5f;
+    --blue-100: #1e3a5f;
+    --blue-200: #1e4d8c;
+  }
+
+  /* ─── Reset ───────────────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; font-size: 16px; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--surface-bg);
+    color: var(--text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    transition: background .35s, color .35s;
+  }
+  a { color: inherit; text-decoration: none; }
+  img { display: block; max-width: 100%; }
+
+  /* ─── Scroll Progress ─────────────────────────────────────────────── */
+  #progress-bar {
+    position: fixed; top: 0; left: 0;
+    height: 3px; width: 0%;
+    background: linear-gradient(90deg, var(--blue-400), var(--blue-600));
+    z-index: 1000; transition: width .1s linear;
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* ─── Navigation ──────────────────────────────────────────────────── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 900;
+    background: var(--nav-bg);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid var(--nav-border);
+    transition: box-shadow var(--transition), background .35s;
+  }
+  nav.scrolled { box-shadow: var(--shadow-md); }
+  .nav-inner {
+    max-width: 1100px; margin: 0 auto;
+    padding: 0 clamp(1rem,4vw,2.5rem);
+    height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem;
+  }
+  .nav-logo { font-weight: 700; font-size: 1rem; letter-spacing: -.3px; color: var(--blue-600); white-space: nowrap; }
+  .nav-links { display: flex; gap: clamp(.5rem,1.5vw,1.5rem); list-style: none; }
+  .nav-links a { font-size: .82rem; font-weight: 500; color: var(--text-muted); transition: color var(--transition); }
+  .nav-links a:hover { color: var(--blue-600); }
+  .nav-cta {
+    font-size: .82rem; font-weight: 600;
+    padding: .42rem 1.1rem;
+    background: var(--blue-600); color: white !important;
+    border-radius: 999px;
+    transition: background var(--transition), transform var(--transition), box-shadow var(--transition) !important;
+  }
+  .nav-cta:hover { background: var(--blue-700) !important; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(37,99,235,.35) !important; }
+
+  /* Nav Controls (dark mode + lang) */
+  .nav-controls { display: flex; align-items: center; gap: .5rem; flex-shrink: 0; }
+
+  /* Language Switcher */
+  .lang-switcher { display: flex; gap: 2px; }
+  .lang-btn {
+    font-size: .72rem; font-weight: 700;
+    padding: .28rem .55rem;
+    border: 1.5px solid var(--border-1);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all var(--transition);
+    letter-spacing: .3px;
+  }
+  .lang-btn.active, .lang-btn:hover {
+    background: var(--blue-600);
+    border-color: var(--blue-600);
+    color: white;
+  }
+
+  /* Dark Mode Toggle */
+  .theme-btn {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--border-1);
+    border-radius: var(--radius-md);
+    background: transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all var(--transition);
+    color: var(--text-secondary);
+  }
+  .theme-btn:hover { border-color: var(--blue-400); background: var(--blue-50); color: var(--blue-600); transform: rotate(15deg); }
+
+  /* ─── Hero ────────────────────────────────────────────────────────── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex; align-items: center;
+    overflow: hidden;
+    padding: 80px clamp(1rem,5vw,3rem) 60px;
+    background:
+      radial-gradient(ellipse 80% 60% at 70% 40%, rgba(59,130,246,.10) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 50% at 20% 80%, rgba(99,102,241,.06) 0%, transparent 60%),
+      var(--surface-1);
+    transition: background .35s;
+  }
+  .hero-grid {
+    max-width: 1100px; margin: 0 auto; width: 100%;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: clamp(2rem,5vw,5rem); align-items: center;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: .4rem;
+    font-size: .78rem; font-weight: 600; letter-spacing: .8px; text-transform: uppercase;
+    color: var(--blue-600); background: var(--blue-50); border: 1px solid var(--border-2);
+    padding: .3rem .85rem; border-radius: 999px; margin-bottom: 1.5rem;
+    opacity: 0; animation: fadeUp .6s .2s forwards;
+  }
+  .hero-badge::before {
+    content: ''; width: 6px; height: 6px;
+    background: var(--blue-500); border-radius: 50%;
+    animation: pulseDot 2s infinite;
+  }
+  @keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+  .hero-name {
+    font-size: clamp(2.4rem,5vw,4.2rem); font-weight: 800;
+    line-height: 1.08; letter-spacing: -2px; color: var(--text-primary);
+    margin-bottom: .4rem; opacity: 0; animation: fadeUp .7s .35s forwards;
+  }
+  .hero-name .accent { color: var(--blue-600); }
+  .hero-role { font-size: clamp(1rem,2vw,1.3rem); font-weight: 500; color: var(--text-muted); margin-bottom: 1.4rem; opacity: 0; animation: fadeUp .7s .5s forwards; }
+  .hero-tagline { font-size: clamp(.92rem,1.4vw,1.05rem); color: var(--text-secondary); max-width: 420px; margin-bottom: 2.2rem; opacity: 0; animation: fadeUp .7s .65s forwards; line-height: 1.75; }
+  .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; opacity: 0; animation: fadeUp .7s .8s forwards; }
+  .hero-socials { display: flex; gap: .75rem; margin-top: 2rem; opacity: 0; animation: fadeUp .7s .95s forwards; }
+
+  .btn { display: inline-flex; align-items: center; gap: .5rem; font-size: .9rem; font-weight: 600; padding: .75rem 1.6rem; border-radius: 999px; transition: all var(--transition); cursor: pointer; }
+  .btn-primary { background: var(--blue-600); color: white; box-shadow: 0 4px 16px rgba(37,99,235,.3); }
+  .btn-primary:hover { background: var(--blue-700); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37,99,235,.4); }
+  .btn-ghost { color: var(--blue-600); border: 1.5px solid var(--border-2); background: transparent; }
+  .btn-ghost:hover { background: var(--blue-50); border-color: var(--blue-400); transform: translateY(-2px); }
+
+  .social-link {
+    width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--border-1); border-radius: var(--radius-md);
+    color: var(--text-muted); font-size: .78rem; font-weight: 700;
+    transition: all var(--transition);
+  }
+  .social-link:hover { border-color: var(--blue-400); color: var(--blue-600); background: var(--blue-50); transform: translateY(-2px); }
+
+  .hero-photo-wrap { position: relative; display: flex; justify-content: center; opacity: 0; animation: fadeIn .9s .4s forwards; }
+  .hero-photo-bg {
+    position: absolute; inset: -24px;
+    background: linear-gradient(135deg, var(--blue-100), var(--blue-200));
+    border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
+    animation: morphBlob 8s ease-in-out infinite; z-index: 0;
+  }
+  @keyframes morphBlob { 0%,100%{border-radius:40% 60% 60% 40%/40% 40% 60% 60%} 25%{border-radius:60% 40% 40% 60%/60% 60% 40% 40%} 50%{border-radius:50% 50% 60% 40%/50% 60% 40% 50%} 75%{border-radius:40% 60% 50% 50%/60% 40% 50% 50%} }
+  .hero-photo {
+    position: relative; z-index: 1;
+    width: clamp(200px,32vw,360px); aspect-ratio: 1;
+    border-radius: 36% 64% 60% 40% / 40% 44% 56% 60%;
+    object-fit: cover; object-position: center top;
+    box-shadow: var(--shadow-xl); border: 4px solid var(--surface-1);
+    animation: morphPhoto 8s ease-in-out infinite;
+  }
+  @keyframes morphPhoto { 0%,100%{border-radius:36% 64% 60% 40%/40% 44% 56% 60%} 25%{border-radius:60% 40% 40% 60%/60% 50% 50% 40%} 50%{border-radius:50% 50% 55% 45%/45% 55% 45% 55%} 75%{border-radius:40% 60% 45% 55%/55% 40% 60% 45%} }
+
+  .hero-stats { position: absolute; bottom: 10%; right: -10%; z-index: 2; display: flex; flex-direction: column; gap: .65rem; }
+  .stat-card {
+    background: var(--surface-card); border-radius: var(--radius-md);
+    padding: .7rem 1rem; box-shadow: var(--shadow-lg);
+    display: flex; align-items: center; gap: .65rem; min-width: 140px;
+    border: 1px solid var(--border-1);
+    animation: floatCard 4s ease-in-out infinite;
+  }
+  .stat-card:nth-child(2) { animation-delay: -2s; }
+  @keyframes floatCard { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+  .stat-icon { width: 34px; height: 34px; background: var(--blue-50); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+  .stat-num { font-size: 1rem; font-weight: 800; color: var(--text-primary); line-height: 1; }
+  .stat-lbl { font-size: .68rem; color: var(--text-muted); margin-top: 1px; }
+
+  /* ─── Section base ────────────────────────────────────────────────── */
+  section { padding: clamp(4rem,8vw,7rem) clamp(1rem,5vw,3rem); }
+  .section-inner { max-width: 1100px; margin: 0 auto; }
+  .section-label { font-size: .75rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--blue-500); margin-bottom: .6rem; }
+  .section-title { font-size: clamp(1.7rem,3.2vw,2.5rem); font-weight: 800; letter-spacing: -1px; color: var(--text-primary); margin-bottom: 1rem; line-height: 1.15; }
+  .section-desc { font-size: .97rem; color: var(--text-secondary); max-width: 540px; line-height: 1.75; margin-bottom: clamp(2.5rem,5vw,4rem); }
+  .divider { width: 48px; height: 4px; background: linear-gradient(90deg, var(--blue-500), var(--blue-300)); border-radius: 2px; margin: .75rem 0 1.2rem; }
+
+  /* ─── Reveal animation ────────────────────────────────────────────── */
+  .reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s cubic-bezier(.4,0,.2,1), transform .7s cubic-bezier(.4,0,.2,1); }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ─── About ───────────────────────────────────────────────────────── */
+  #about { background: var(--surface-1); transition: background .35s; }
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem,5vw,5rem); align-items: start; }
+  .about-values { display: flex; flex-direction: column; gap: 1.2rem; margin-top: 1rem; }
+  .value-item {
+    display: flex; gap: 1rem; align-items: flex-start;
+    padding: 1.2rem; border-radius: var(--radius-md);
+    border: 1px solid var(--border-1); background: var(--surface-bg);
+    transition: all var(--transition);
+  }
+  .value-item:hover { border-color: var(--border-2); background: var(--blue-50); transform: translateX(4px); box-shadow: var(--shadow-sm); }
+  .value-icon { width: 40px; height: 40px; background: var(--blue-50); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+  .value-title { font-size: .9rem; font-weight: 700; color: var(--text-primary); margin-bottom: .2rem; }
+  .value-desc { font-size: .83rem; color: var(--text-secondary); line-height: 1.55; }
+
+  /* ─── Skills ──────────────────────────────────────────────────────── */
+  #skills { background: var(--surface-2); transition: background .35s; }
+  .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+  .skill-group {
+    background: var(--surface-1); border-radius: var(--radius-lg);
+    padding: 1.8rem; box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-1);
+    transition: box-shadow var(--transition), transform var(--transition), background .35s;
+  }
+  .skill-group:hover { box-shadow: var(--shadow-md); transform: translateY(-3px); }
+  .skill-group-title { font-size: .8rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--blue-500); margin-bottom: 1.4rem; }
+  .skill-bar-item { margin-bottom: 1.2rem; }
+  .skill-bar-header { display: flex; justify-content: space-between; margin-bottom: .4rem; }
+  .skill-bar-name { font-size: .88rem; font-weight: 600; color: var(--text-primary); }
+  .skill-bar-pct { font-size: .78rem; color: var(--text-muted); font-weight: 600; }
+  .skill-bar-track { height: 6px; background: var(--border-1); border-radius: 3px; overflow: hidden; }
+  .skill-bar-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--blue-400), var(--blue-600)); border-radius: 3px; transition: width 1.2s cubic-bezier(.4,0,.2,1); }
+  .tags { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .tag { font-size: .78rem; font-weight: 600; padding: .3rem .75rem; background: var(--blue-50); color: var(--blue-700, #1d4ed8); border: 1px solid var(--border-2); border-radius: 999px; transition: all var(--transition); }
+  .tag:hover { background: var(--blue-600); color: white; border-color: var(--blue-600); transform: translateY(-1px); }
+  [data-theme="dark"] .tag { color: var(--blue-400); }
+
+  /* ─── Experience ──────────────────────────────────────────────────── */
+  #experience { background: var(--surface-1); transition: background .35s; }
+  .timeline { position: relative; padding-left: 2.5rem; }
+  .timeline::before { content: ''; position: absolute; left: 0; top: 6px; bottom: 6px; width: 2px; background: linear-gradient(to bottom, var(--blue-400), var(--blue-100)); border-radius: 1px; }
+  .timeline-item { position: relative; margin-bottom: 3rem; }
+  .timeline-item::before { content: ''; position: absolute; left: -2.9rem; top: 6px; width: 14px; height: 14px; background: var(--surface-1); border: 3px solid var(--blue-500); border-radius: 50%; transition: all var(--transition); z-index: 1; }
+  .timeline-item:hover::before { background: var(--blue-500); transform: scale(1.2); box-shadow: 0 0 0 4px var(--blue-50); }
+  .timeline-card { background: var(--surface-bg); border: 1px solid var(--border-1); border-radius: var(--radius-lg); padding: 1.8rem; transition: all var(--transition); }
+  .timeline-card:hover { background: var(--surface-1); border-color: var(--border-2); box-shadow: var(--shadow-md); transform: translateX(4px); }
+  .timeline-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: .6rem; flex-wrap: wrap; gap: .5rem; }
+  .timeline-role { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); }
+  .timeline-period { font-size: .78rem; font-weight: 600; color: var(--blue-600); background: var(--blue-50); border: 1px solid var(--border-2); padding: .2rem .65rem; border-radius: 999px; white-space: nowrap; }
+  .timeline-company { font-size: .88rem; font-weight: 600; color: var(--text-muted); margin-bottom: .8rem; }
+  .timeline-company span { color: var(--blue-600); }
+  .timeline-desc { font-size: .88rem; color: var(--text-secondary); line-height: 1.7; margin-bottom: 1rem; }
+  .timeline-chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .chip { font-size: .72rem; font-weight: 600; padding: .2rem .6rem; background: var(--surface-1); border: 1px solid var(--border-1); border-radius: var(--radius-sm); color: var(--text-secondary); }
+
+  /* ─── Projects ────────────────────────────────────────────────────── */
+  #projects { background: var(--surface-2); transition: background .35s; }
+  .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.75rem; }
+  .project-card { background: var(--surface-1); border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border-1); box-shadow: var(--shadow-sm); transition: all var(--transition); transform-style: preserve-3d; cursor: pointer; }
+  .project-card:hover { box-shadow: var(--shadow-xl); border-color: var(--border-2); }
+  .project-thumb { height: 190px; position: relative; overflow: hidden; }
+  .project-thumb-bg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 4rem; transition: transform .5s cubic-bezier(.4,0,.2,1); }
+  .project-card:hover .project-thumb-bg { transform: scale(1.07); }
+  .project-thumb-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.25)); }
+  .project-tag-float { position: absolute; top: 1rem; left: 1rem; font-size: .7rem; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: white; background: rgba(37,99,235,.75); backdrop-filter: blur(8px); padding: .3rem .7rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.2); }
+  .project-body { padding: 1.6rem; }
+  .project-title { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: .5rem; }
+  .project-desc { font-size: .86rem; color: var(--text-secondary); line-height: 1.65; margin-bottom: 1rem; }
+  .project-meta { display: flex; justify-content: space-between; align-items: center; }
+  .project-metrics { display: flex; gap: 1rem; }
+  .metric { text-align: center; }
+  .metric-val { font-size: .95rem; font-weight: 800; color: var(--blue-600); line-height: 1; }
+  .metric-key { font-size: .65rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+  .project-link { display: flex; align-items: center; gap: .3rem; font-size: .8rem; font-weight: 600; color: var(--blue-600); transition: gap var(--transition); }
+  .project-card:hover .project-link { gap: .6rem; }
+
+  /* ─── Education ───────────────────────────────────────────────────── */
+  #education { background: var(--surface-1); transition: background .35s; }
+  .edu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+  .edu-card { border-radius: var(--radius-lg); padding: 1.8rem; border: 1px solid var(--border-1); background: var(--surface-bg); transition: all var(--transition); position: relative; overflow: hidden; }
+  .edu-card::after { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(to bottom, var(--blue-400), var(--blue-200)); border-radius: 2px 0 0 2px; transform: scaleY(0); transform-origin: top; transition: transform var(--transition); }
+  .edu-card:hover { border-color: var(--border-2); box-shadow: var(--shadow-md); }
+  .edu-card:hover::after { transform: scaleY(1); }
+  .edu-icon { font-size: 1.8rem; margin-bottom: 1rem; }
+  .edu-degree { font-size: .95rem; font-weight: 700; color: var(--text-primary); margin-bottom: .2rem; }
+  .edu-school { font-size: .85rem; font-weight: 600; color: var(--blue-600); margin-bottom: .3rem; }
+  .edu-year { font-size: .78rem; color: var(--text-muted); font-weight: 600; margin-bottom: .8rem; }
+  .edu-desc { font-size: .82rem; color: var(--text-secondary); line-height: 1.6; }
+
+  .cert-strip { margin-top: 3.5rem; padding-top: 2.5rem; border-top: 1px solid var(--border-1); }
+  .cert-strip-title { font-size: .85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.4rem; }
+  .cert-list { display: flex; flex-wrap: wrap; gap: .75rem; }
+  .cert-badge { display: flex; align-items: center; gap: .5rem; padding: .55rem 1rem; background: var(--surface-1); border: 1.5px solid var(--border-2); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); transition: all var(--transition); }
+  .cert-badge:hover { border-color: var(--blue-400); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .cert-badge span:first-child { font-size: 1.1rem; }
+  .cert-name { font-size: .8rem; font-weight: 700; color: var(--text-primary); }
+  .cert-org { font-size: .7rem; color: var(--text-muted); }
+
+  /* ─── Footer ──────────────────────────────────────────────────────── */
+  footer { background: #0f172a; color: #94a3b8; padding: 3rem clamp(1rem,5vw,3rem); text-align: center; }
+  .footer-inner { max-width: 1100px; margin: 0 auto; }
+  .footer-name { font-size: 1.4rem; font-weight: 800; color: white; margin-bottom: .3rem; letter-spacing: -.5px; }
+  .footer-tagline { font-size: .88rem; margin-bottom: 1.8rem; }
+  .footer-links { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 2rem; }
+  .footer-link { font-size: .85rem; font-weight: 500; color: #64748b; transition: color var(--transition); }
+  .footer-link:hover { color: var(--blue-400); }
+  .footer-copy { font-size: .78rem; color: #475569; }
+
+  /* ─── Animations ──────────────────────────────────────────────────── */
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
+
+  /* ─── Responsive ──────────────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr; text-align: center; }
+    .hero-tagline { max-width: 100%; margin-left: auto; margin-right: auto; }
+    .hero-actions { justify-content: center; }
+    .hero-socials { justify-content: center; }
+    .hero-photo-wrap { order: -1; }
+    .hero-stats { right: 0; bottom: 0; flex-direction: row; flex-wrap: wrap; }
+    .about-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 720px) {
+    .nav-links { display: none; }
+    .hero-stats { display: none; }
+    .timeline { padding-left: 1.5rem; }
+    .timeline-item::before { left: -1.9rem; }
+  }
+  @media (max-width: 480px) {
+    .nav-controls { gap: .3rem; }
+    .lang-btn { padding: .24rem .44rem; font-size: .68rem; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- ══ NAVIGATION ════════════════════════════════════════════════════ -->
+<nav id="navbar">
+  <div class="nav-inner">
+    <span class="nav-logo">F. Morbe</span>
+    <ul class="nav-links">
+      <li><a href="#about"      data-i18n="nav_about">About</a></li>
+      <li><a href="#skills"     data-i18n="nav_skills">Skills</a></li>
+      <li><a href="#experience" data-i18n="nav_exp">Experience</a></li>
+      <li><a href="#projects"   data-i18n="nav_projects">Projects</a></li>
+      <li><a href="#education"  data-i18n="nav_edu">Education</a></li>
+      <li><a href="#contact" class="nav-cta" data-i18n="nav_contact">Contact</a></li>
+    </ul>
+    <div class="nav-controls">
+      <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="de">DE</button>
+        <button class="lang-btn" data-lang="zh">繁中</button>
+      </div>
+      <button class="theme-btn" id="themeToggle" title="Toggle dark mode">🌙</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ HERO ══════════════════════════════════════════════════════════ -->
+<header class="hero">
+  <div class="hero-grid">
+    <div class="hero-content">
+      <div class="hero-badge" data-i18n="hero_badge">Open to new R&D opportunities</div>
+      <h1 class="hero-name">Frederik<br><span class="accent">Morbe.</span></h1>
+      <p class="hero-role" data-i18n="hero_role">Senior R&D Engineer · Bergisch Gladbach, Germany</p>
+      <p class="hero-tagline" data-i18n="hero_tagline">
+        Turning cutting-edge science into manufacturable reality — bridging the gap between lab bench,
+        CAD workstation, and production floor.
+      </p>
+      <div class="hero-actions">
+        <a href="#projects" class="btn btn-primary" data-i18n="hero_cta1">View Projects ↓</a>
+        <a href="mailto:frederik.morbe@rnd.de" class="btn btn-ghost" data-i18n="hero_cta2">Get in Touch</a>
+      </div>
+      <div class="hero-socials">
+        <a href="#" class="social-link" title="LinkedIn">in</a>
+        <a href="#" class="social-link" title="GitHub">GH</a>
+        <a href="#" class="social-link" title="ORCID">OR</a>
+        <a href="#" class="social-link" title="ResearchGate">RG</a>
+      </div>
+    </div>
+    <div class="hero-photo-wrap">
+      <div class="hero-photo-bg"></div>
+      <img src="105707f5-7a14-4f9c-aa56-6c9b3ce9ecc3.png" alt="Frederik Morbe" class="hero-photo">
+      <div class="hero-stats">
+        <div class="stat-card">
+          <div class="stat-icon">🔬</div>
+          <div>
+            <div class="stat-num">10+ yrs</div>
+            <div class="stat-lbl" data-i18n="stat1_lbl">R&D Experience</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📄</div>
+          <div>
+            <div class="stat-num">12+</div>
+            <div class="stat-lbl" data-i18n="stat2_lbl">Patents & Papers</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══ ABOUT ══════════════════════════════════════════════════════════ -->
+<section id="about">
+  <div class="section-inner">
+    <div class="about-grid">
+      <div class="reveal">
+        <p class="section-label" data-i18n="about_label">About Me</p>
+        <h2 class="section-title" data-i18n="about_title">Engineering at the frontier of life sciences</h2>
+        <div class="divider"></div>
+        <p class="about-p1" style="color:var(--text-secondary);line-height:1.8;font-size:.97rem;margin-bottom:1.2rem;" data-i18n="about_p1">
+          With over a decade of experience in biomedical R&D, I specialise in translating complex scientific
+          requirements into precision-engineered hardware. At Miltenyi Biotec I lead mechanical development
+          for next-generation cell therapy instruments — from concept ideation and FEA simulation through to
+          design-for-manufacture and regulatory submission.
+        </p>
+        <p style="color:var(--text-muted);line-height:1.8;font-size:.93rem;" data-i18n="about_p2">
+          My work sits at the intersection of mechanical engineering, rapid prototyping, and cross-disciplinary
+          team leadership. I thrive in environments where the problem space is ambiguous and the stakes are high.
+          Fluent in German and English; conversational in Mandarin Chinese.
+        </p>
+      </div>
+      <div class="about-values reveal" style="transition-delay:.15s">
+        <div class="value-item">
+          <div class="value-icon">⚗️</div>
+          <div>
+            <div class="value-title" data-i18n="val1_title">Science-Driven Design</div>
+            <div class="value-desc" data-i18n="val1_desc">Every mechanical decision is grounded in biological requirements, sterility constraints, and clinical validation data.</div>
+          </div>
+        </div>
+        <div class="value-item">
+          <div class="value-icon">⚙️</div>
+          <div>
+            <div class="value-title" data-i18n="val2_title">Precision Engineering</div>
+            <div class="value-desc" data-i18n="val2_desc">From tight-tolerance microfluidic channels to robust automated assemblies — I design for repeatability and reliability.</div>
+          </div>
+        </div>
+        <div class="value-item">
+          <div class="value-icon">🏭</div>
+          <div>
+            <div class="value-title" data-i18n="val3_title">DFM & DFA Mindset</div>
+            <div class="value-desc" data-i18n="val3_desc">Designs that look good on paper but can't be built at scale don't ship. I optimise for manufacturability from day one.</div>
+          </div>
+        </div>
+        <div class="value-item">
+          <div class="value-icon">🤝</div>
+          <div>
+            <div class="value-title" data-i18n="val4_title">Cross-Functional Leadership</div>
+            <div class="value-desc" data-i18n="val4_desc">Bridging biology, software, and mechanical teams — I align technical roadmaps with project milestones and regulatory timelines.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SKILLS ════════════════════════════════════════════════════════ -->
+<section id="skills">
+  <div class="section-inner">
+    <p class="section-label reveal" data-i18n="skills_label">Skills & Tools</p>
+    <h2 class="section-title reveal" data-i18n="skills_title">Technical expertise</h2>
+    <div class="divider reveal"></div>
+    <p class="section-desc reveal" data-i18n="skills_desc">A broad engineering toolkit built across medical devices, laboratory automation, and precision manufacturing.</p>
+    <div class="skills-grid">
+      <div class="skill-group reveal">
+        <div class="skill-group-title" data-i18n="sg1_title">CAD & Simulation</div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-header"><span class="skill-bar-name">SOLIDWORKS / PDM</span><span class="skill-bar-pct">97%</span></div>
+          <div class="skill-bar-track"><div class="skill-bar-fill" data-pct="97"></div></div>
+        </div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-header"><span class="skill-bar-name">ANSYS FEA</span><span class="skill-bar-pct">85%</span></div>
+          <div class="skill-bar-track"><div class="skill-bar-fill" data-pct="85"></div></div>
+        </div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-header"><span class="skill-bar-name">CATIA V5</span><span class="skill-bar-pct">78%</span></div>
+          <div class="skill-bar-track"><div class="skill-bar-fill" data-pct="78"></div></div>
+        </div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-header"><span class="skill-bar-name">CFD (COMSOL)</span><span class="skill-bar-pct">72%</span></div>
+          <div class="skill-bar-track"><div class="skill-bar-fill" data-pct="72"></div></div>
+        </div>
+      </div>
+      <div class="skill-group reveal" style="transition-delay:.1s">
+        <div class="skill-group-title" data-i18n="sg2_title">Prototyping & Manufacturing</div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-header"><span class="skill-bar-name">SLA / SLS / FDM 3D Printing</span><span class="skill-bar-pct">92%</span></div>
+          <div class="skill-bar-track"><div class="skill-bar-fill" data-pct="92"></div></div>
+        </div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-header"><span class="skill-bar-name">CNC Machining & GD&T</span><span class="skill-bar-pct">88%</span></div>
+          <div class="skill-bar-track"><div class="skill-bar-fill" data-pct="88"></div></div>
+        </div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-header"><span class="skill-bar-name">Injection Moulding DFM</span><span class="skill-bar-pct">82%</span></div>
+          <div class="skill-bar-track"><div class="skill-bar-fill" data-pct="82"></div></div>
+        </div>
+        <div class="skill-bar-item">
+          <div class="skill-bar-header"><span class="skill-bar-name">Sheet Metal / Welding</span><span class="skill-bar-pct">75%</span></div>
+          <div class="skill-bar-track"><div class="skill-bar-fill" data-pct="75"></div></div>
+        </div>
+      </div>
+      <div class="skill-group reveal" style="transition-delay:.2s">
+        <div class="skill-group-title" data-i18n="sg3_title">Methods & Domains</div>
+        <div class="tags">
+          <span class="tag">Medical Device (ISO 13485)</span>
+          <span class="tag">Risk Management (ISO 14971)</span>
+          <span class="tag">Design Controls</span>
+          <span class="tag">V&V Testing</span>
+          <span class="tag">Microfluidics</span>
+          <span class="tag">Lab Automation</span>
+          <span class="tag">FMEA / DFMEA</span>
+          <span class="tag">Python</span>
+          <span class="tag">MATLAB</span>
+          <span class="tag">Agile / Jira</span>
+          <span class="tag">Six Sigma</span>
+          <span class="tag">DHF / DMR</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ EXPERIENCE ════════════════════════════════════════════════════ -->
+<section id="experience">
+  <div class="section-inner">
+    <p class="section-label reveal" data-i18n="exp_label">Work History</p>
+    <h2 class="section-title reveal" data-i18n="exp_title">Where I've made an impact</h2>
+    <div class="divider reveal"></div>
+    <p class="section-desc reveal" data-i18n="exp_desc">Over a decade across biomedical start-ups, Fraunhofer research, and a global life-science leader.</p>
+    <div class="timeline">
+
+      <div class="timeline-item reveal">
+        <div class="timeline-card">
+          <div class="timeline-header">
+            <span class="timeline-role" data-i18n="exp1_role">Lead Mechanical Design Engineer</span>
+            <span class="timeline-period">2019 — Present</span>
+          </div>
+          <div class="timeline-company"><span data-i18n="exp1_company">Miltenyi Biotec GmbH</span> · Bergisch Gladbach, DE</div>
+          <p class="timeline-desc" data-i18n="exp1_desc">
+            Leading mechanical R&D for a closed-system automated cell therapy platform. Defined architecture
+            for 6 instrument subsystems, managed a cross-functional team of 8 engineers, and guided the
+            device through ISO 13485-compliant design controls to first-in-human clinical trials. Reduced
+            prototype-to-validation cycle time by 40% through a structured rapid-iteration framework.
+          </p>
+          <div class="timeline-chips">
+            <span class="chip">SOLIDWORKS</span><span class="chip">ISO 13485</span>
+            <span class="chip">Cell Therapy</span><span class="chip">Team Lead</span><span class="chip">V&V</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item reveal" style="transition-delay:.1s">
+        <div class="timeline-card">
+          <div class="timeline-header">
+            <span class="timeline-role" data-i18n="exp2_role">R&D Engineer — Lab Automation</span>
+            <span class="timeline-period">2016 — 2019</span>
+          </div>
+          <div class="timeline-company"><span data-i18n="exp2_company">Hamilton Bonaduz AG</span> · Bonaduz, CH</div>
+          <p class="timeline-desc" data-i18n="exp2_desc">
+            Developed high-precision liquid handling modules for next-generation pipetting robots. Filed
+            3 patents covering low-volume dispensing mechanisms. Collaborated with software and
+            controls teams to integrate mechanical subsystems into a unified robotics platform;
+            achieved ±0.3 µL dispense accuracy across the full operating range.
+          </p>
+          <div class="timeline-chips">
+            <span class="chip">Liquid Handling</span><span class="chip">Robotics</span>
+            <span class="chip">Patent Filing</span><span class="chip">CATIA V5</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item reveal" style="transition-delay:.2s">
+        <div class="timeline-card">
+          <div class="timeline-header">
+            <span class="timeline-role" data-i18n="exp3_role">Research Engineer</span>
+            <span class="timeline-period">2014 — 2016</span>
+          </div>
+          <div class="timeline-company"><span data-i18n="exp3_company">Fraunhofer IPA</span> · Stuttgart, DE</div>
+          <p class="timeline-desc" data-i18n="exp3_desc">
+            Conducted applied research on microfluidic point-of-care diagnostics as part of the EU
+            Horizon POCCA project. Designed soft-lithography mould tooling and conducted COMSOL fluid
+            simulations to optimise channel geometries for laminar flow at sub-µL volumes.
+          </p>
+          <div class="timeline-chips">
+            <span class="chip">Microfluidics</span><span class="chip">COMSOL</span>
+            <span class="chip">EU Project</span><span class="chip">PoC Diagnostics</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item reveal" style="transition-delay:.3s">
+        <div class="timeline-card">
+          <div class="timeline-header">
+            <span class="timeline-role" data-i18n="exp4_role">Junior Development Engineer</span>
+            <span class="timeline-period">2012 — 2014</span>
+          </div>
+          <div class="timeline-company"><span data-i18n="exp4_company">Schiller AG</span> · Baar, CH</div>
+          <p class="timeline-desc" data-i18n="exp4_desc">
+            Designed enclosure and electro-mechanical sub-assemblies for portable cardiac monitoring
+            devices. Gained foundational expertise in IEC 60601 electrical safety testing, EMC shielding
+            strategies, and DFM for injection-moulded medical plastics.
+          </p>
+          <div class="timeline-chips">
+            <span class="chip">IEC 60601</span><span class="chip">Cardiology</span>
+            <span class="chip">DFM</span><span class="chip">SOLIDWORKS</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ PROJECTS ══════════════════════════════════════════════════════ -->
+<section id="projects">
+  <div class="section-inner">
+    <p class="section-label reveal" data-i18n="proj_label">Selected Work</p>
+    <h2 class="section-title reveal" data-i18n="proj_title">Projects I'm proud of</h2>
+    <div class="divider reveal"></div>
+    <p class="section-desc reveal" data-i18n="proj_desc">A curated selection demonstrating depth of engineering, cross-disciplinary impact, and innovation.</p>
+    <div class="projects-grid">
+
+      <div class="project-card reveal" data-tilt>
+        <div class="project-thumb">
+          <div class="project-thumb-bg" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe);">🧬</div>
+          <div class="project-thumb-overlay"></div>
+          <span class="project-tag-float" data-i18n="p1_tag">Cell Therapy</span>
+        </div>
+        <div class="project-body">
+          <div class="project-title" data-i18n="p1_title">CliniMACS Prodigy® Next-Gen Platform</div>
+          <p class="project-desc" data-i18n="p1_desc">Complete mechanical architecture for a GMP-grade closed-system CAR-T cell manufacturing instrument. 6 subsystems, 800+ unique part numbers.</p>
+          <div class="project-meta">
+            <div class="project-metrics">
+              <div class="metric"><div class="metric-val">−40%</div><div class="metric-key" data-i18n="p1_m1">Cycle Time</div></div>
+              <div class="metric"><div class="metric-val">IND</div><div class="metric-key" data-i18n="p1_m2">FDA Filing</div></div>
+            </div>
+            <span class="project-link" data-i18n="proj_link">Details →</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-card reveal" style="transition-delay:.1s" data-tilt>
+        <div class="project-thumb">
+          <div class="project-thumb-bg" style="background:linear-gradient(135deg,#e0f2fe,#bae6fd);">🤖</div>
+          <div class="project-thumb-overlay"></div>
+          <span class="project-tag-float" data-i18n="p2_tag">Lab Automation</span>
+        </div>
+        <div class="project-body">
+          <div class="project-title" data-i18n="p2_title">Micro-Dispensing Module</div>
+          <p class="project-desc" data-i18n="p2_desc">Novel spring-loaded, piezo-actuated dispensing head achieving sub-µL accuracy. 3 granted patents; integrated into a commercial pipetting platform.</p>
+          <div class="project-meta">
+            <div class="project-metrics">
+              <div class="metric"><div class="metric-val">±0.3µL</div><div class="metric-key" data-i18n="p2_m1">Accuracy</div></div>
+              <div class="metric"><div class="metric-val">3</div><div class="metric-key" data-i18n="p2_m2">Patents</div></div>
+            </div>
+            <span class="project-link" data-i18n="proj_link">Details →</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-card reveal" style="transition-delay:.2s" data-tilt>
+        <div class="project-thumb">
+          <div class="project-thumb-bg" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe);">💧</div>
+          <div class="project-thumb-overlay"></div>
+          <span class="project-tag-float" data-i18n="p3_tag">Microfluidics</span>
+        </div>
+        <div class="project-body">
+          <div class="project-title" data-i18n="p3_title">POCCA Point-of-Care Chip</div>
+          <p class="project-desc" data-i18n="p3_desc">Soft-lithography PoC diagnostic cartridge for rapid sepsis biomarker detection. EU Horizon co-funded; achieved 30-minute time-to-result.</p>
+          <div class="project-meta">
+            <div class="project-metrics">
+              <div class="metric"><div class="metric-val">30 min</div><div class="metric-key" data-i18n="p3_m1">Result Time</div></div>
+              <div class="metric"><div class="metric-val">EU H2020</div><div class="metric-key" data-i18n="p3_m2">Funded</div></div>
+            </div>
+            <span class="project-link" data-i18n="proj_link">Details →</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-card reveal" style="transition-delay:.3s" data-tilt>
+        <div class="project-thumb">
+          <div class="project-thumb-bg" style="background:linear-gradient(135deg,#dcfce7,#bbf7d0);">🐍</div>
+          <div class="project-thumb-overlay"></div>
+          <span class="project-tag-float" data-i18n="p4_tag">Digital Tools</span>
+        </div>
+        <div class="project-body">
+          <div class="project-title" data-i18n="p4_title">Automated DHF Review Tool</div>
+          <p class="project-desc" data-i18n="p4_desc">Python-based internal tool that parses SOLIDWORKS PDM exports and auto-generates ISO 13485 Design History File reports, cutting review time by 65%.</p>
+          <div class="project-meta">
+            <div class="project-metrics">
+              <div class="metric"><div class="metric-val">−65%</div><div class="metric-key" data-i18n="p4_m1">Review Time</div></div>
+              <div class="metric"><div class="metric-val">Python</div><div class="metric-key" data-i18n="p4_m2">Stack</div></div>
+            </div>
+            <span class="project-link" data-i18n="proj_link">Details →</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ EDUCATION ═════════════════════════════════════════════════════ -->
+<section id="education">
+  <div class="section-inner">
+    <p class="section-label reveal" data-i18n="edu_label">Education</p>
+    <h2 class="section-title reveal" data-i18n="edu_title">Academic foundation</h2>
+    <div class="divider reveal"></div>
+    <div class="edu-grid">
+      <div class="edu-card reveal">
+        <div class="edu-icon">🎓</div>
+        <div class="edu-degree" data-i18n="edu1_degree">M.Sc. Biomedical Engineering</div>
+        <div class="edu-school">RWTH Aachen University</div>
+        <div class="edu-year">2010 – 2012</div>
+        <p class="edu-desc" data-i18n="edu1_desc">Thesis on microfluidic cell separation using acoustophoresis. Graduated with distinction (1.2). DAAD scholarship recipient.</p>
+      </div>
+      <div class="edu-card reveal" style="transition-delay:.1s">
+        <div class="edu-icon">📐</div>
+        <div class="edu-degree" data-i18n="edu2_degree">B.Eng. Mechanical Engineering</div>
+        <div class="edu-school">TU Darmstadt</div>
+        <div class="edu-year">2007 – 2010</div>
+        <p class="edu-desc" data-i18n="edu2_desc">Specialisation in precision mechanics and thermodynamics. Bachelor thesis on heat dissipation in miniaturised electronic assemblies.</p>
+      </div>
+      <div class="edu-card reveal" style="transition-delay:.2s">
+        <div class="edu-icon">🌏</div>
+        <div class="edu-degree" data-i18n="edu3_degree">Exchange Semester</div>
+        <div class="edu-school">National Taiwan University</div>
+        <div class="edu-year">Spring 2009</div>
+        <p class="edu-desc" data-i18n="edu3_desc">Focus on MEMS fabrication and precision manufacturing. Strengthened cross-cultural collaboration skills and initiated Mandarin language studies.</p>
+      </div>
+    </div>
+    <div class="cert-strip reveal">
+      <div class="cert-strip-title" data-i18n="cert_title">Certifications</div>
+      <div class="cert-list">
+        <div class="cert-badge">
+          <span>📋</span>
+          <div><div class="cert-name">ISO 13485 Lead Auditor</div><div class="cert-org">TÜV Rheinland · 2022</div></div>
+        </div>
+        <div class="cert-badge">
+          <span>⚠️</span>
+          <div><div class="cert-name">ISO 14971 Risk Management</div><div class="cert-org">BSI · 2021</div></div>
+        </div>
+        <div class="cert-badge">
+          <span>📊</span>
+          <div><div class="cert-name">Six Sigma Black Belt</div><div class="cert-org">ASQ · 2020</div></div>
+        </div>
+        <div class="cert-badge">
+          <span>🐍</span>
+          <div><div class="cert-name">Python for Data Science</div><div class="cert-org">Coursera / IBM · 2023</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ════════════════════════════════════════════════════════ -->
+<footer id="contact">
+  <div class="footer-inner">
+    <div class="footer-name">Frederik Morbe</div>
+    <div class="footer-tagline" data-i18n="footer_tagline">Senior R&D Engineer · Bergisch Gladbach, Germany</div>
+    <div class="footer-links">
+      <a href="mailto:frederik.morbe@rnd.de" class="footer-link">frederik.morbe@rnd.de</a>
+      <a href="#" class="footer-link">LinkedIn</a>
+      <a href="#" class="footer-link">ResearchGate</a>
+      <a href="#" class="footer-link">ORCID</a>
+    </div>
+    <div class="footer-copy" data-i18n="footer_copy">© 2024 Frederik Morbe — All rights reserved</div>
+  </div>
+</footer>
+
+<script>
+// ─── Translations ────────────────────────────────────────────────────
+const T = {
+  en: {
+    nav_about: 'About', nav_skills: 'Skills', nav_exp: 'Experience',
+    nav_projects: 'Projects', nav_edu: 'Education', nav_contact: 'Contact',
+    hero_badge: 'Open to new R&D opportunities',
+    hero_role: 'Senior R&D Engineer · Bergisch Gladbach, Germany',
+    hero_tagline: 'Turning cutting-edge science into manufacturable reality — bridging the gap between lab bench, CAD workstation, and production floor.',
+    hero_cta1: 'View Projects ↓', hero_cta2: 'Get in Touch',
+    stat1_lbl: 'R&D Experience', stat2_lbl: 'Patents & Papers',
+    about_label: 'About Me',
+    about_title: 'Engineering at the frontier of life sciences',
+    about_p1: 'With over a decade of experience in biomedical R&D, I specialise in translating complex scientific requirements into precision-engineered hardware. At Miltenyi Biotec I lead mechanical development for next-generation cell therapy instruments — from concept ideation and FEA simulation through to design-for-manufacture and regulatory submission.',
+    about_p2: 'My work sits at the intersection of mechanical engineering, rapid prototyping, and cross-disciplinary team leadership. I thrive in environments where the problem space is ambiguous and the stakes are high. Fluent in German and English; conversational in Mandarin Chinese.',
+    val1_title: 'Science-Driven Design', val1_desc: 'Every mechanical decision is grounded in biological requirements, sterility constraints, and clinical validation data.',
+    val2_title: 'Precision Engineering', val2_desc: 'From tight-tolerance microfluidic channels to robust automated assemblies — I design for repeatability and reliability.',
+    val3_title: 'DFM & DFA Mindset', val3_desc: 'Designs that look good on paper but can\'t be built at scale don\'t ship. I optimise for manufacturability from day one.',
+    val4_title: 'Cross-Functional Leadership', val4_desc: 'Bridging biology, software, and mechanical teams — I align technical roadmaps with project milestones and regulatory timelines.',
+    skills_label: 'Skills & Tools', skills_title: 'Technical expertise',
+    skills_desc: 'A broad engineering toolkit built across medical devices, laboratory automation, and precision manufacturing.',
+    sg1_title: 'CAD & Simulation', sg2_title: 'Prototyping & Manufacturing', sg3_title: 'Methods & Domains',
+    exp_label: 'Work History', exp_title: 'Where I\'ve made an impact',
+    exp_desc: 'Over a decade across biomedical start-ups, Fraunhofer research, and a global life-science leader.',
+    exp1_role: 'Lead Mechanical Design Engineer', exp1_company: 'Miltenyi Biotec GmbH',
+    exp1_desc: 'Leading mechanical R&D for a closed-system automated cell therapy platform. Defined architecture for 6 instrument subsystems, managed a cross-functional team of 8 engineers, and guided the device through ISO 13485-compliant design controls to first-in-human clinical trials. Reduced prototype-to-validation cycle time by 40% through a structured rapid-iteration framework.',
+    exp2_role: 'R&D Engineer — Lab Automation', exp2_company: 'Hamilton Bonaduz AG',
+    exp2_desc: 'Developed high-precision liquid handling modules for next-generation pipetting robots. Filed 3 patents covering low-volume dispensing mechanisms. Collaborated with software and controls teams to integrate mechanical subsystems into a unified robotics platform; achieved ±0.3 µL dispense accuracy across the full operating range.',
+    exp3_role: 'Research Engineer', exp3_company: 'Fraunhofer IPA',
+    exp3_desc: 'Conducted applied research on microfluidic point-of-care diagnostics as part of the EU Horizon POCCA project. Designed soft-lithography mould tooling and conducted COMSOL fluid simulations to optimise channel geometries for laminar flow at sub-µL volumes.',
+    exp4_role: 'Junior Development Engineer', exp4_company: 'Schiller AG',
+    exp4_desc: 'Designed enclosure and electro-mechanical sub-assemblies for portable cardiac monitoring devices. Gained foundational expertise in IEC 60601 electrical safety testing, EMC shielding strategies, and DFM for injection-moulded medical plastics.',
+    proj_label: 'Selected Work', proj_title: 'Projects I\'m proud of',
+    proj_desc: 'A curated selection demonstrating depth of engineering, cross-disciplinary impact, and innovation.',
+    proj_link: 'Details →',
+    p1_tag: 'Cell Therapy', p1_title: 'CliniMACS Prodigy® Next-Gen Platform',
+    p1_desc: 'Complete mechanical architecture for a GMP-grade closed-system CAR-T cell manufacturing instrument. 6 subsystems, 800+ unique part numbers.',
+    p1_m1: 'Cycle Time', p1_m2: 'FDA Filing',
+    p2_tag: 'Lab Automation', p2_title: 'Micro-Dispensing Module',
+    p2_desc: 'Novel spring-loaded, piezo-actuated dispensing head achieving sub-µL accuracy. 3 granted patents; integrated into a commercial pipetting platform.',
+    p2_m1: 'Accuracy', p2_m2: 'Patents',
+    p3_tag: 'Microfluidics', p3_title: 'POCCA Point-of-Care Chip',
+    p3_desc: 'Soft-lithography PoC diagnostic cartridge for rapid sepsis biomarker detection. EU Horizon co-funded; achieved 30-minute time-to-result.',
+    p3_m1: 'Result Time', p3_m2: 'Funded',
+    p4_tag: 'Digital Tools', p4_title: 'Automated DHF Review Tool',
+    p4_desc: 'Python-based internal tool that parses SOLIDWORKS PDM exports and auto-generates ISO 13485 Design History File reports, cutting review time by 65%.',
+    p4_m1: 'Review Time', p4_m2: 'Stack',
+    edu_label: 'Education', edu_title: 'Academic foundation',
+    edu1_degree: 'M.Sc. Biomedical Engineering', edu1_desc: 'Thesis on microfluidic cell separation using acoustophoresis. Graduated with distinction (1.2). DAAD scholarship recipient.',
+    edu2_degree: 'B.Eng. Mechanical Engineering', edu2_desc: 'Specialisation in precision mechanics and thermodynamics. Bachelor thesis on heat dissipation in miniaturised electronic assemblies.',
+    edu3_degree: 'Exchange Semester', edu3_desc: 'Focus on MEMS fabrication and precision manufacturing. Strengthened cross-cultural collaboration skills and initiated Mandarin language studies.',
+    cert_title: 'Certifications',
+    footer_tagline: 'Senior R&D Engineer · Bergisch Gladbach, Germany',
+    footer_copy: '© 2024 Frederik Morbe — All rights reserved'
+  },
+
+  de: {
+    nav_about: 'Über mich', nav_skills: 'Fähigkeiten', nav_exp: 'Erfahrung',
+    nav_projects: 'Projekte', nav_edu: 'Ausbildung', nav_contact: 'Kontakt',
+    hero_badge: 'Offen für neue F&E-Möglichkeiten',
+    hero_role: 'Senior F&E-Ingenieur · Bergisch Gladbach, Deutschland',
+    hero_tagline: 'Modernste Wissenschaft in fertigungsreife Realität überführen — die Brücke zwischen Labortisch, CAD-Workstation und Produktionshalle.',
+    hero_cta1: 'Projekte ansehen ↓', hero_cta2: 'Kontakt aufnehmen',
+    stat1_lbl: 'F&E-Erfahrung', stat2_lbl: 'Patente & Veröffentlichungen',
+    about_label: 'Über mich',
+    about_title: 'Engineering an der Grenze der Lebenswissenschaften',
+    about_p1: 'Mit über einem Jahrzehnt Erfahrung in der biomedizinischen F&E spezialisiere ich mich auf die Umsetzung komplexer wissenschaftlicher Anforderungen in präzisionstechnische Hardware. Bei Miltenyi Biotec leite ich die mechanische Entwicklung von Instrumenten der nächsten Generation für die Zelltherapie — von der Konzeptidee und FEA-Simulation bis hin zu Design-for-Manufacture und regulatorischer Einreichung.',
+    about_p2: 'Meine Arbeit liegt an der Schnittstelle von Maschinenbau, Rapid Prototyping und interdisziplinärer Teamführung. Ich arbeite am besten in Umgebungen, in denen der Problemraum unklar und der Einsatz hoch ist. Fließend in Deutsch und Englisch; Konversationskenntnisse in Mandarin.',
+    val1_title: 'Wissenschaftsgetriebenes Design', val1_desc: 'Jede mechanische Entscheidung basiert auf biologischen Anforderungen, Sterilitätsbedingungen und klinischen Validierungsdaten.',
+    val2_title: 'Präzisionstechnik', val2_desc: 'Von engtoleranten Mikrofluidikkanälen bis zu robusten automatisierten Baugruppen — ich entwickle für Wiederholbarkeit und Zuverlässigkeit.',
+    val3_title: 'DFM & DFA-Denkweise', val3_desc: 'Designs, die auf dem Papier gut aussehen, aber nicht skalierbar gebaut werden können, werden nicht geliefert. Ich optimiere die Fertigbarkeit vom ersten Tag an.',
+    val4_title: 'Interdisziplinäre Führung', val4_desc: 'Verbindung von Biologie-, Software- und Mechanikteams — ich stimme technische Roadmaps mit Projektmeilensteinen und regulatorischen Zeitplänen ab.',
+    skills_label: 'Fähigkeiten & Werkzeuge', skills_title: 'Technisches Fachwissen',
+    skills_desc: 'Ein breites Engineering-Toolkit, aufgebaut über Medizinprodukte, Laborautomatisierung und Präzisionsfertigung.',
+    sg1_title: 'CAD & Simulation', sg2_title: 'Prototyping & Fertigung', sg3_title: 'Methoden & Domänen',
+    exp_label: 'Berufserfahrung', exp_title: 'Wo ich Wirkung erzielt habe',
+    exp_desc: 'Über ein Jahrzehnt bei Biotech-Start-ups, Fraunhofer-Forschung und einem globalen Life-Science-Konzern.',
+    exp1_role: 'Leitender Konstruktionsingenieur', exp1_company: 'Miltenyi Biotec GmbH',
+    exp1_desc: 'Leitung der mechanischen F&E für eine automatisierte Zelltherapieplattform. Architektur für 6 Gerätesysteme definiert, ein interdisziplinäres Team von 8 Ingenieuren geleitet und das Gerät durch ISO 13485-konforme Designkontrollen bis zu klinischen Erstversuchen am Menschen geführt. Prototyp-zu-Validierungs-Zykluszeit durch einen strukturierten Rapid-Iteration-Rahmen um 40 % reduziert.',
+    exp2_role: 'F&E-Ingenieur — Laborautomatisierung', exp2_company: 'Hamilton Bonaduz AG',
+    exp2_desc: 'Entwicklung hochpräziser Flüssigkeitshandhabungsmodule für Pipettierroboter der nächsten Generation. 3 Patente für Niedervolumen-Dosierungsmechanismen angemeldet. Zusammenarbeit mit Software- und Steuerungsteams; ±0,3 µL Dosiergenauigkeit über den gesamten Betriebsbereich erreicht.',
+    exp3_role: 'Forschungsingenieur', exp3_company: 'Fraunhofer IPA',
+    exp3_desc: 'Angewandte Forschung zu mikrofluidischen Point-of-Care-Diagnostika im Rahmen des EU-Horizon-Projekts POCCA. Design von Soft-Lithographie-Formwerkzeugen und COMSOL-Strömungssimulationen zur Optimierung von Kanalgeometrien.',
+    exp4_role: 'Junior-Entwicklungsingenieur', exp4_company: 'Schiller AG',
+    exp4_desc: 'Entwicklung von Gehäusen und elektromechanischen Baugruppen für tragbare Herzüberwachungsgeräte. Grundlegende Expertise in IEC 60601 Sicherheitsprüfung, EMV-Abschirmung und DFM für Spritzguss-Medizinkunststoffe erworben.',
+    proj_label: 'Ausgewählte Arbeiten', proj_title: 'Projekte, auf die ich stolz bin',
+    proj_desc: 'Eine kuratierte Auswahl, die technische Tiefe, interdisziplinäre Wirkung und Innovation zeigt.',
+    proj_link: 'Details →',
+    p1_tag: 'Zelltherapie', p1_title: 'CliniMACS Prodigy® Nächste Generation',
+    p1_desc: 'Vollständige mechanische Architektur für ein GMP-konformes geschlossenes CAR-T-Zellherstellungsinstrument. 6 Subsysteme, über 800 eindeutige Teilenummern.',
+    p1_m1: 'Zykluszeit', p1_m2: 'FDA-Einreichung',
+    p2_tag: 'Laborautomatisierung', p2_title: 'Mikrodosierkopf',
+    p2_desc: 'Neuartiger federkraftbelasteter, piezoaktuierter Dosierkopf mit sub-µL-Genauigkeit. 3 erteilte Patente; in eine kommerzielle Pipettierplattform integriert.',
+    p2_m1: 'Genauigkeit', p2_m2: 'Patente',
+    p3_tag: 'Mikrofluidik', p3_title: 'POCCA Point-of-Care-Chip',
+    p3_desc: 'Soft-Lithographie-PoC-Diagnosekartuschen für die schnelle Detektion von Sepsis-Biomarkern. EU Horizon kofinanziert; 30-Minuten-Ergebniszeit erreicht.',
+    p3_m1: 'Ergebniszeit', p3_m2: 'Finanziert',
+    p4_tag: 'Digitale Tools', p4_title: 'Automatisiertes DHF-Prüfwerkzeug',
+    p4_desc: 'Python-basiertes internes Tool, das SOLIDWORKS PDM-Exporte analysiert und ISO 13485 Design History File-Berichte automatisch generiert — Prüfzeit um 65 % reduziert.',
+    p4_m1: 'Prüfzeit', p4_m2: 'Technologie',
+    edu_label: 'Ausbildung', edu_title: 'Akademische Grundlage',
+    edu1_degree: 'M.Sc. Biomedizintechnik', edu1_desc: 'Abschlussarbeit zur mikrofluidischen Zelltrennung mittels Akustophorese. Abschluss mit Auszeichnung (1,2). DAAD-Stipendiat.',
+    edu2_degree: 'B.Eng. Maschinenbau', edu2_desc: 'Schwerpunkt Feinmechanik und Thermodynamik. Bachelorarbeit zur Wärmeabführung in miniaturisierten elektronischen Baugruppen.',
+    edu3_degree: 'Auslandssemester', edu3_desc: 'Schwerpunkt MEMS-Fertigung und Präzisionsbearbeitung. Interkulturelle Zusammenarbeit und Beginn des Mandarin-Sprachstudiums.',
+    cert_title: 'Zertifizierungen',
+    footer_tagline: 'Senior F&E-Ingenieur · Bergisch Gladbach, Deutschland',
+    footer_copy: '© 2024 Frederik Morbe — Alle Rechte vorbehalten'
+  },
+
+  zh: {
+    nav_about: '關於我', nav_skills: '技能', nav_exp: '工作經歷',
+    nav_projects: '專案', nav_edu: '學歷', nav_contact: '聯絡',
+    hero_badge: '開放研發新機會',
+    hero_role: '資深研發工程師 · 德國貝爾吉施格拉德巴赫',
+    hero_tagline: '將尖端科學轉化為可製造的現實——銜接實驗室、CAD 工作站與生產線之間的落差。',
+    hero_cta1: '瀏覽專案 ↓', hero_cta2: '與我聯絡',
+    stat1_lbl: '研發經驗', stat2_lbl: '專利與論文',
+    about_label: '關於我',
+    about_title: '在生命科學前沿從事工程研發',
+    about_p1: '擁有逾十年生物醫學研發經驗，專長於將複雜的科學需求轉化為精密工程硬體。在 Miltenyi Biotec，我主導下一代細胞治療儀器的機械開發——從概念發想、有限元素模擬，到面向製造的設計與法規申報。',
+    about_p2: '我的工作橫跨機械工程、快速原型開發與跨部門團隊領導。我在問題空間模糊、風險較高的環境中最能發揮。母語德語，英語流利，中文（普通話）可對話。',
+    val1_title: '以科學為導向的設計', val1_desc: '每一個機械決策皆根植於生物需求、無菌限制及臨床驗證數據。',
+    val2_title: '精密工程', val2_desc: '從高精度微流道到穩健的自動化組件——我追求設計的可重複性與可靠性。',
+    val3_title: 'DFM 與 DFA 思維', val3_desc: '紙上好看卻無法大規模生產的設計不會上線。我從第一天起就以可製造性為優先。',
+    val4_title: '跨職能領導', val4_desc: '串聯生物、軟體與機械團隊——使技術路線圖與專案里程碑及法規時程保持一致。',
+    skills_label: '技能與工具', skills_title: '專業技術能力',
+    skills_desc: '涵蓋醫療器材、實驗室自動化與精密製造的廣泛工程工具組合。',
+    sg1_title: 'CAD 與模擬', sg2_title: '原型製作與製造', sg3_title: '方法論與領域',
+    exp_label: '工作經歷', exp_title: '我在哪裡創造了影響',
+    exp_desc: '逾十年橫跨生物醫學新創、弗勞恩霍夫研究機構與全球生命科學龍頭企業。',
+    exp1_role: '首席機械設計工程師', exp1_company: 'Miltenyi Biotec GmbH',
+    exp1_desc: '主導封閉式自動化細胞治療平台的機械研發。定義 6 個儀器子系統的架構，管理 8 名工程師組成的跨職能團隊，並在 ISO 13485 合規設計管控下將裝置引導至首次人體臨床試驗。透過結構化快速迭代框架，將原型到驗證的週期時間縮短 40%。',
+    exp2_role: '研發工程師 — 實驗室自動化', exp2_company: 'Hamilton Bonaduz AG',
+    exp2_desc: '為下一代移液機器人開發高精度液體處理模組。申請 3 項涵蓋低容量分液機構的專利。與軟體及控制團隊合作，將機械子系統整合至統一機器人平台，實現全操作範圍 ±0.3 µL 分液精度。',
+    exp3_role: '研究工程師', exp3_company: 'Fraunhofer IPA',
+    exp3_desc: '作為歐盟 Horizon POCCA 專案的一部分，進行微流控即時診斷的應用研究。設計軟光刻模具，並利用 COMSOL 流體模擬優化亞微升體積下的層流通道幾何形狀。',
+    exp4_role: '初級開發工程師', exp4_company: 'Schiller AG',
+    exp4_desc: '為攜帶式心臟監測設備設計外殼及機電子組件。獲得 IEC 60601 安全測試、EMC 屏蔽策略及射出成型醫療塑膠 DFM 的基礎專業知識。',
+    proj_label: '精選作品', proj_title: '我引以為豪的專案',
+    proj_desc: '精選展示工程深度、跨領域影響力與創新力的代表作品。',
+    proj_link: '詳情 →',
+    p1_tag: '細胞治療', p1_title: 'CliniMACS Prodigy® 新世代平台',
+    p1_desc: 'GMP 等級封閉系統 CAR-T 細胞製造儀器的完整機械架構。6 個子系統，逾 800 個唯一件號。',
+    p1_m1: '週期時間', p1_m2: 'FDA 申報',
+    p2_tag: '實驗室自動化', p2_title: '微量分液模組',
+    p2_desc: '新型彈簧加載壓電驅動分液頭，實現亞微升精度。已獲 3 項專利；整合至商業移液平台。',
+    p2_m1: '精度', p2_m2: '專利',
+    p3_tag: '微流控', p3_title: 'POCCA 即時診斷晶片',
+    p3_desc: '用於快速敗血症生物標誌物檢測的軟光刻 PoC 診斷卡匣。歐盟 Horizon 共同資助；實現 30 分鐘出結果。',
+    p3_m1: '出結果時間', p3_m2: '資助來源',
+    p4_tag: '數位工具', p4_title: '自動化 DHF 審查工具',
+    p4_desc: '基於 Python 的內部工具，解析 SOLIDWORKS PDM 輸出並自動生成 ISO 13485 設計歷史檔案報告，審查時間縮短 65%。',
+    p4_m1: '審查時間', p4_m2: '技術棧',
+    edu_label: '學歷', edu_title: '學術基礎',
+    edu1_degree: '生物醫學工程碩士', edu1_desc: '論文主題：利用聲泳進行微流控細胞分選。以優異成績畢業（1.2）。德國學術交流資助署（DAAD）獎學金得主。',
+    edu2_degree: '機械工程學士', edu2_desc: '主修精密機械與熱力學。學士論文研究微型電子組件的散熱問題。',
+    edu3_degree: '交換學期', edu3_desc: '專注於 MEMS 製程與精密製造。強化跨文化協作能力，開始學習普通話。',
+    cert_title: '證照與認證',
+    footer_tagline: '資深研發工程師 · 德國貝爾吉施格拉德巴赫',
+    footer_copy: '© 2024 Frederik Morbe — 版權所有'
+  }
+};
+
+let currentLang = 'en';
+
+function applyLang(lang) {
+  const dict = T[lang];
+  if (!dict) return;
+  currentLang = lang;
+  document.documentElement.lang = lang === 'zh' ? 'zh-TW' : lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (dict[key] !== undefined) el.textContent = dict[key];
+  });
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
+  localStorage.setItem('cv-lang', lang);
+}
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyLang(btn.dataset.lang));
+});
+
+// ─── Dark Mode ───────────────────────────────────────────────────────
+const themeBtn = document.getElementById('themeToggle');
+function applyTheme(dark) {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  themeBtn.textContent = dark ? '☀️' : '🌙';
+  localStorage.setItem('cv-theme', dark ? 'dark' : 'light');
+}
+themeBtn.addEventListener('click', () => {
+  applyTheme(document.documentElement.getAttribute('data-theme') !== 'dark');
+});
+// Respect OS preference on first load
+const saved = localStorage.getItem('cv-theme');
+if (saved) applyTheme(saved === 'dark');
+else if (window.matchMedia('(prefers-color-scheme: dark)').matches) applyTheme(true);
+
+// ─── Scroll Progress ──────────────────────────────────────────────────
+const progressBar = document.getElementById('progress-bar');
+window.addEventListener('scroll', () => {
+  const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight) * 100;
+  progressBar.style.width = pct + '%';
+}, { passive: true });
+
+// ─── Sticky Nav ───────────────────────────────────────────────────────
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 20);
+}, { passive: true });
+
+// ─── Reveal on Scroll ─────────────────────────────────────────────────
+const revealObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+// ─── Skill Bar Animate ────────────────────────────────────────────────
+const barObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.skill-bar-fill').forEach(bar => {
+        setTimeout(() => { bar.style.width = bar.dataset.pct + '%'; }, 200);
+      });
+      barObserver.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.3 });
+document.querySelectorAll('.skill-group').forEach(el => barObserver.observe(el));
+
+// ─── 3D Card Tilt ─────────────────────────────────────────────────────
+document.querySelectorAll('[data-tilt]').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect();
+    const rx = ((e.clientY - r.top  - r.height/2) / (r.height/2)) * -6;
+    const ry = ((e.clientX - r.left - r.width /2) / (r.width /2)) *  6;
+    card.style.transform = `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-4px) scale(1.01)`;
+  });
+  card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+});
+
+// ─── Init saved language ──────────────────────────────────────────────
+const savedLang = localStorage.getItem('cv-lang');
+if (savedLang && T[savedLang]) applyLang(savedLang);
+</script>
+
+</body>
+</html>
